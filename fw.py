@@ -84,31 +84,6 @@ class Framework(object):
     def delete(self, url, func):
         self.route(url, func, ['DELETE'])
 
-
-def index(request, response):
-    response['body'] = 'index'
-
-
-def hello(request, response):
-    response['body'] = "hello"
-
-
-def users(request, response):
-    response['body'] = "users"
-
-
-def user_profile(request, response):
-    response['body'] = "user profile"
-
-
-def user_stats(request, response):
-    response['body'] = "user stats"
-
-
-def not_stats(request, response):
-    response['body'] = 'not stats'
-
-
 def _route(parts, table, func):
     if len(parts) == 1:
         val = table.get(parts[0])
@@ -142,6 +117,31 @@ def _lookup(parts, table):
     if not isinstance(sub_table, dict):
         return sub_table
     return _lookup(parts[1:], sub_table)
+
+
+def index(request, response):
+    response['body'] = 'index'
+
+
+def hello(request, response):
+    response['body'] = "hello"
+
+
+def users(request, response):
+    response['body'] = "users"
+
+
+def user_profile(request, response):
+    response['body'] = "user profile"
+
+
+def user_stats(request, response):
+    response['body'] = "user stats"
+
+
+def not_stats(request, response):
+    response['body'] = 'not stats'
+
 
 app = Framework()
 app.get('/hello/', hello)
