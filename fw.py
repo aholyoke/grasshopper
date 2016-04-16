@@ -1,5 +1,3 @@
-
-
 CODES = {
     200: 'OK',
     404: 'Not Found',
@@ -16,19 +14,19 @@ METHODS = [
 
 class Framework(object):
     def __init__(self):
-        self.routing_table_get = []
-        self.routing_table_post = []
-        self.routing_table_put = []
-        self.routing_table_delete = []
-        self.routing_tables = {
-            'GET': self.routing_table_get,
-            'POST': self.routing_table_post,
-            'PUT': self.routing_table_put,
-            'DELETE': self.routing_table_delete,
+        self.routing_get = []
+        self.routing_post = []
+        self.routing_put = []
+        self.routing_delete = []
+        self.routing = {
+            'GET': self.routing_get,
+            'POST': self.routing_post,
+            'PUT': self.routing_put,
+            'DELETE': self.routing_delete,
         }
 
     def _find_route(self, url, method):
-        for path, func in self.routing_tables[method]:
+        for path, func in self.routing[method]:
             if path == url:
                 return func
 
@@ -70,7 +68,7 @@ class Framework(object):
         if methods is None:
             methods = METHODS
         for method in methods:
-            self.routing_tables[method].append((url, func))
+            self.routing[method].append((url, func))
 
     def get(self, url, func):
         self.all(url, func, ['GET'])
