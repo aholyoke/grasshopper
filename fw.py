@@ -86,8 +86,8 @@ class Framework(object):
 
 
 def _route(parts, table, func):
+    val = table.get(parts[0])
     if len(parts) == 1:
-        val = table.get(parts[0])
         if val is None:
             table[parts[0]] = func
         elif isinstance(val, dict):
@@ -95,7 +95,6 @@ def _route(parts, table, func):
         else:
             1 / 0
     else:
-        val = table.get(parts[0])
         if val is None:
             table[parts[0]] = {}
             _route(parts[1:], table[parts[0]], func)
