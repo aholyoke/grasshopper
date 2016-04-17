@@ -25,16 +25,9 @@ class Framework(object):
             'DELETE': self.routing_delete,
         }
 
-    def lookup(self, url, method):
-        url = url.lstrip('/')
-        if not url.endswith('/'):
-            url = url + '/'
-        parts = url.split('/')
-        return _lookup(parts, self.routing[method])
-
     def __call__(self, environ, start_response):
         method = environ['REQUEST_METHOD']
-        func = self._find_route(environ['PATH_INFO'], method)
+        func = self.lookup(environ['PATH_INFO'], method)
 
         request = {
             'method': method,
@@ -65,6 +58,13 @@ class Framework(object):
         start_response(u'{} {}'.format(status_code, CODES[status_code]), response_headers)
         yield response['body']
 
+    def lookup(self, url, method):
+        url = url.lstrip('/')
+        if not url.endswith('/'):
+            url = url + '/'
+        parts = url.split('/')
+        return _lookup(parts, self.routing[method])
+
     def route(self, url, func, methods=None):
         if methods is None:
             methods = METHODS
@@ -83,6 +83,7 @@ class Framework(object):
 
     def delete(self, url, func):
         self.route(url, func, ['DELETE'])
+
 
 def _route(parts, table, func):
     if len(parts) == 1:
