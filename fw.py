@@ -53,7 +53,7 @@ class Framework(object):
         if 'Content-Length' not in response['headers']:
             response['headers']['Content-Length'] = str(len(response['body']))
 
-        response_headers = [(key, val) for key, val in response['headers'].items()]
+        response_headers = response['headers'].items()
 
         start_response(u'{} {}'.format(status_code, CODES[status_code]), response_headers)
         yield response['body']
