@@ -61,7 +61,8 @@ class Framework(object):
         yield response['body']
 
     def lookup(self, url, method):
-        parts = url.strip('/').split('/') + ['']
+        path, _, qs = url.partition('?')
+        parts = path.strip('/').split('/') + ['']
         return _lookup(parts, self.routing[method])
 
     def route(self, url, func, methods=None):
