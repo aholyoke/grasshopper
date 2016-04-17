@@ -27,12 +27,14 @@ class Framework(object):
 
     def __call__(self, environ, start_response):
         method = environ['REQUEST_METHOD']
-        func = self.lookup(environ['PATH_INFO'], method)
+        path = environ['PATH_INFO']
+        func = self.lookup(path, method)
 
         request = {
             'method': method,
             'headers': {},
             'body': u'',
+            'path': path,
         }
         response = {
             'headers': {},
@@ -40,7 +42,7 @@ class Framework(object):
         }
         if func is None:
             response_headers = [(key, val) for key, val in response['headers'].items()]
-            start_response(u'404 Not Found', response_headers)
+            start_response('404 Not Found', response_headers)
             yield 'Not Found'
             raise StopIteration()
 
@@ -55,7 +57,7 @@ class Framework(object):
 
         response_headers = response['headers'].items()
 
-        start_response(u'{} {}'.format(status_code, CODES[status_code]), response_headers)
+        start_response('{} {}'.format(status_code, CODES[status_code]), response_headers)
         yield response['body']
 
     def lookup(self, url, method):
@@ -162,6 +164,7 @@ app.get('/users/*/stats', user_stats)
 app.get('/users/something/notstats', not_stats)
 app.get('/resource', resource)
 app.get('/resource/list', resource_list)
+app.get('/resource/list/*', resource_list)
 
 
 assert app.lookup('users', 'GET') == app.lookup('/users', 'GET')
@@ -179,4 +182,6 @@ assert app.lookup('/users/51/stats/', 'GET') == user_stats
 assert app.lookup('users/52/stats', 'GET') == user_stats
 assert app.lookup('users', 'POST') == new_user
 assert app.lookup('/resource/list', 'GET') == resource_list
+assert app.lookup('/resource/list/something', 'GET') == resource_list
+assert app.lookup('/resource/list/something/somethingelse', 'GET') == None
 assert app.lookup('/resource/notexistant', 'GET') == None
