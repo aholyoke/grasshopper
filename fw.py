@@ -136,13 +136,32 @@ def not_stats(request, response):
     response['body'] = 'not stats'
 
 
+def user_index(request, response):
+    response['body'] = 'user index'
+
+
+def new_user(request, response):
+    response['body'] = 'new user'
+
+
+def resource(request, response):
+    response['body'] = 'resource'
+
+
+def resource_list(request, response):
+    response['body'] = 'resource_list'
+
 app = Framework()
+app.get('/', index)
 app.get('/hello/', hello)
 app.get('/users', users)
+app.post('/users', new_user)
+app.get('/users/*', user_index)
 app.get('/users/*/profile', user_profile)
 app.get('/users/*/stats', user_stats)
 app.get('/users/something/notstats', not_stats)
-app.get('/', index)
+app.get('/resource', resource)
+app.get('/resource/list', resource_list)
 
 
 assert app.lookup('users', 'GET') == app.lookup('/users', 'GET')
@@ -154,10 +173,10 @@ assert app.lookup('/hello', 'GET') == hello
 assert app.lookup('hello/', 'GET') == hello
 assert app.lookup('/hello/', 'GET') == hello
 assert app.lookup('/users/something/notstats', 'GET') == not_stats
-assert app.lookup('/users/nonexistant', 'GET') == 404
 assert app.lookup('/users/50/profile', 'GET') == user_profile
 assert app.lookup('/users/51/profile/', 'GET') == user_profile
 assert app.lookup('/users/51/stats/', 'GET') == user_stats
 assert app.lookup('users/52/stats', 'GET') == user_stats
-assert app.lookup('users/something/stats', 'GET') == 404
-assert app.lookup('users/something/stats', 'POST') == 404
+assert app.lookup('users', 'POST') == new_user
+assert app.lookup('/resource/list', 'GET') == resource_list
+assert app.lookup('/resource/notexistant', 'GET') == None
