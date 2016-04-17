@@ -59,18 +59,20 @@ class Framework(object):
         yield response['body']
 
     def lookup(self, url, method):
-        url = url.lstrip('/')
-        if not url.endswith('/'):
-            url = url + '/'
-        parts = url.split('/')
+        parts = url.strip('/').split('/') + ['']
         return _lookup(parts, self.routing[method])
 
     def route(self, url, func, methods=None):
         if methods is None:
             methods = METHODS
-        parts = url.lstrip('/').rstrip('/').split('/')
-        for method in methods:
-            _route(parts, self.routing[method], func)
+        parts = url.strip('/').split('/')
+        try:
+            for method in methods:
+                _route(parts, self.routing[method], func)
+        except ValueError as e:
+            raise ValueError("Path defined twice {} ({})".format(
+                url,
+                e.message))
 
     def get(self, url, func):
         self.route(url, func, ['GET'])
@@ -89,30 +91,21 @@ def _route(parts, table, func):
     val = table.get(parts[0])
     if len(parts) == 1:
         if val is None:
-            table[parts[0]] = func
-        elif isinstance(val, dict):
-            1 / 0
-        else:
-            1 / 0
+            table[parts[0]] = {'': func}
+            return
+        raise ValueError("original: \"{}\" new: \"{}\"".format(
+            val[''].__name__,
+            func.__name__))
     else:
         if val is None:
             table[parts[0]] = {}
-            _route(parts[1:], table[parts[0]], func)
-        elif isinstance(val, dict):
-            _route(parts[1:], val, func)
-        else:
-            table[parts[0]] = {'': val}
-            _route(parts[1:], table[parts[0]], func)
+        _route(parts[1:], table[parts[0]], func)
 
 
 def _lookup(parts, table):
-    try:
-        sub_table = table[parts[0]]
-    except KeyError:
-        try:
-            sub_table = table['*']
-        except KeyError:
-            return 404
+    sub_table = table.get(parts[0], table.get('*'))
+    if sub_table is None:
+        return
 
     if not isinstance(sub_table, dict):
         return sub_table
