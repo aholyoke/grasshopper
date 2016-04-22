@@ -1,3 +1,5 @@
+from urllib import quote
+
 CODES = {
     200: 'OK',
     201: 'Created',
@@ -50,6 +52,8 @@ class Framework(object):
             'headers': {},
             'body': u'',
             'path': path,
+            'environ': environ,
+            'routing': self.routing,
         }
         response = {
             'headers': {},
@@ -61,7 +65,10 @@ class Framework(object):
             yield 'Not Found'
             raise StopIteration()
 
-        status_code = func(request, response)
+        status_code = func(
+            request=request,
+            response=response,
+        )
 
         if status_code is None:
             status_code = 200
@@ -74,6 +81,11 @@ class Framework(object):
 
         start_response('{} {}'.format(status_code, CODES[status_code]), response_headers)
         yield response['body']
+
+    def url_for(method, func):
+        found_parts = _url_for(self.routing[method], func)
+        for parts in found_parts:
+            yield '/'.join(parts)
 
     def lookup(self, url, method):
         path, _, qs = url.partition('?')
@@ -128,6 +140,37 @@ def _lookup(parts, table):
     if not isinstance(sub_table, dict):
         return sub_table
     return _lookup(parts[1:], sub_table)
+
+
+def reconstruct_url(environ):
+    """ Written by Ian Bickling """
+    url = environ['wsgi.url_scheme'] + '://'
+
+    if environ.get('HTTP_HOST'):
+        url += environ['HTTP_HOST']
+    else:
+        url += environ['SERVER_NAME']
+
+        if environ['wsgi.url_scheme'] == 'https':
+            if environ['SERVER_PORT'] != '443':
+                url += ':' + environ['SERVER_PORT']
+        else:
+            if environ['SERVER_PORT'] != '80':
+                url += ':' + environ['SERVER_PORT']
+
+    url += quote(environ.get('SCRIPT_NAME', ''))
+    url += quote(environ.get('PATH_INFO', ''))
+    if environ.get('QUERY_STRING'):
+        url += '?' + environ['QUERY_STRING']
+
+
+def _url_for(routing, func):
+    for key, value in routing.items():
+        if value == func:
+            yield [key]
+        elif isinstance(value, dict):
+            for found in _url_for(value, func):
+                yield [key] + found
 
 
 def index(request, response):
