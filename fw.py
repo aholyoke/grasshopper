@@ -39,8 +39,11 @@ METHODS = [
 
 
 class Framework(object):
-    def __init__(self):
+    def __init__(self, config=None):
         self.routing = {verb: {} for verb in METHODS}
+        if config is None:
+            config = {}
+        self.config = config
 
     def __call__(self, environ, start_response):
         method = environ['REQUEST_METHOD']
@@ -60,7 +63,7 @@ class Framework(object):
             'body': u'',
         }
         if func is None:
-            response_headers = [(key, val) for key, val in response['headers'].items()]
+            response_headers = response['headers'].items()
             start_response('404 Not Found', response_headers)
             yield 'Not Found'
             raise StopIteration()
@@ -68,6 +71,7 @@ class Framework(object):
         status_code = func(
             request=request,
             response=response,
+            config=self.config,
         )
 
         if status_code is None:
@@ -171,76 +175,3 @@ def _url_for(routing, func):
         elif isinstance(value, dict):
             for found in _url_for(value, func):
                 yield [key] + found
-
-
-def index(request, response):
-    response['body'] = 'index'
-
-
-def hello(request, response):
-    response['body'] = "hello"
-
-
-def users(request, response):
-    response['body'] = "users"
-
-
-def user_profile(request, response):
-    response['body'] = "user profile"
-
-
-def user_stats(request, response):
-    response['body'] = "user stats"
-
-
-def not_stats(request, response):
-    response['body'] = 'not stats'
-
-
-def user_index(request, response):
-    response['body'] = 'user index'
-
-
-def new_user(request, response):
-    response['body'] = 'new user'
-
-
-def resource(request, response):
-    response['body'] = 'resource'
-
-
-def resource_list(request, response):
-    response['body'] = 'resource_list'
-
-app = Framework()
-app.get('/', index)
-app.get('/hello/', hello)
-app.get('/users', users)
-app.post('/users', new_user)
-app.get('/users/*', user_index)
-app.get('/users/*/profile', user_profile)
-app.get('/users/*/stats', user_stats)
-app.get('/users/something/notstats', not_stats)
-app.get('/resource', resource)
-app.get('/resource/list', resource_list)
-app.get('/resource/list/*', resource_list)
-
-
-assert app.lookup('users', 'GET') == app.lookup('/users', 'GET')
-assert app.lookup('users/', 'GET') == app.lookup('/users/', 'GET')
-assert app.lookup('/users', 'GET') == app.lookup('/users/', 'GET')
-assert app.lookup('/', 'GET') == index
-assert app.lookup('hello', 'GET') == hello
-assert app.lookup('/hello', 'GET') == hello
-assert app.lookup('hello/', 'GET') == hello
-assert app.lookup('/hello/', 'GET') == hello
-assert app.lookup('/users/something/notstats', 'GET') == not_stats
-assert app.lookup('/users/50/profile', 'GET') == user_profile
-assert app.lookup('/users/51/profile/', 'GET') == user_profile
-assert app.lookup('/users/51/stats/', 'GET') == user_stats
-assert app.lookup('users/52/stats', 'GET') == user_stats
-assert app.lookup('users', 'POST') == new_user
-assert app.lookup('/resource/list', 'GET') == resource_list
-assert app.lookup('/resource/list/something', 'GET') == resource_list
-assert app.lookup('/resource/list/something/somethingelse', 'GET') == None
-assert app.lookup('/resource/notexistant', 'GET') == None
