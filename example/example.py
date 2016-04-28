@@ -1,5 +1,5 @@
 from grasshopper import Framework
-from settings_local import settings
+from settings.local import settings
 
 """ define views """
 
