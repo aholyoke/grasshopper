@@ -1,7 +1,7 @@
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from fw import Framework
+from grasshopper import Framework
+from settings_local import settings
+
+""" define views """
 
 
 def index(request, response, **kwargs):
@@ -43,7 +43,10 @@ def resource(request, response, **kwargs):
 def resource_list(request, response, **kwargs):
     response['body'] = 'resource_list'
 
-app = Framework()
+
+""" Route endpoints to views """
+
+app = Framework(settings)
 app.get('/', index)
 app.get('/hello/', hello)
 app.get('/users', users)
