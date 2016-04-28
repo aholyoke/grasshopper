@@ -1,47 +1,8 @@
 from grasshopper import Framework
 from settings.local import settings
-
-""" define views """
-
-
-def index(request, response, **kwargs):
-    response['body'] = 'index'
-
-
-def hello(request, response, **kwargs):
-    response['body'] = "hello"
-
-
-def users(request, response, **kwargs):
-    response['body'] = "users"
-
-
-def user_profile(request, response, **kwargs):
-    response['body'] = "user profile"
-
-
-def user_stats(request, response, **kwargs):
-    response['body'] = "user stats"
-
-
-def not_stats(request, response, **kwargs):
-    response['body'] = 'not stats'
-
-
-def user_index(request, response, **kwargs):
-    response['body'] = 'user index'
-
-
-def new_user(request, response, **kwargs):
-    response['body'] = 'new user'
-
-
-def resource(request, response, **kwargs):
-    response['body'] = 'resource'
-
-
-def resource_list(request, response, **kwargs):
-    response['body'] = 'resource_list'
+from views.other import index, hello, not_stats
+from views.resources import resource, resource_list
+from views.users import users, user_profile, user_stats, user_index, new_user
 
 
 """ Route endpoints to views """
