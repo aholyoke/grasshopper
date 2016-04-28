@@ -39,11 +39,11 @@ METHODS = [
 
 
 class Framework(object):
-    def __init__(self, config=None):
+    def __init__(self, settings=None):
         self.routing = {verb: {} for verb in METHODS}
-        if config is None:
-            config = {}
-        self.config = config
+        if settings is None:
+            settings = {}
+        self.settings = settings
 
     def __call__(self, environ, start_response):
         method = environ['REQUEST_METHOD']
@@ -71,7 +71,7 @@ class Framework(object):
         status_code = func(
             request=request,
             response=response,
-            config=self.config,
+            settings=self.settings,
         )
 
         if status_code is None:
