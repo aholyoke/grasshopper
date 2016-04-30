@@ -29,10 +29,10 @@ def g(**kwargs): pass
 def h(**kwargs): pass
 
 
-class TestRouting(unittest.TestCase):
+class TestLookup(unittest.TestCase):
 
     def setUp(self):
-        app = Framework({'a': 1, 'b': [2, 3]})
+        app = Framework()
         app.get('/', i)
         app.get('/a/', a)
         app.get('/b', b)
@@ -98,6 +98,28 @@ class TestRouting(unittest.TestCase):
         self.assertEqual(
             self.app.lookup('/a', 'GET'),
             self.app.lookup('a/', 'GET'))
+
+
+class TestRouting(unittest.TestCase):
+    def setUp(self):
+        self.app = Framework()
+
+    def test_order_doesnt_matter(self):
+        from itertools import permutations
+        routes = [
+            ('/a', a),
+            ('/a/*', b),
+            ('/a/c', c),
+        ]
+        routes_permutations = permutations(routes, len(routes))
+        for i, routes in enumerate(routes_permutations):
+            app = Framework({'app': i})
+            for route in routes:
+                app.get(*route)
+            self.assertEqual(app.lookup('/a', 'GET'), a, i)
+            self.assertEqual(app.lookup('/a/x', 'GET'), b, i)
+            self.assertEqual(app.lookup('/a/c', 'GET'), c, i)
+
 
 if __name__ == "__main__":
     unittest.main()

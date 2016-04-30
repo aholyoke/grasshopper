@@ -124,12 +124,14 @@ class Framework(object):
 def _route(parts, table, func):
     val = table.get(parts[0])
     if len(parts) == 1:
-        if val is None:
+        if isinstance(val, dict):
+            table[parts[0]][''] = func
+        elif val is None:
             table[parts[0]] = {'': func}
-            return
-        raise ValueError("original: \"{}\" new: \"{}\"".format(
-            val[''].__name__,
-            func.__name__))
+        else:
+            raise ValueError("original: \"{}\" new: \"{}\"".format(
+                val[''].__name__,
+                func.__name__))
     else:
         if val is None:
             table[parts[0]] = {}
