@@ -1,11 +1,12 @@
 from jinja2 import Template
+from helpers import read_template
 
 
 def resource(request, response, settings, **kwargs):
-    with open("{}/resource.html".format(settings['TEMPLATES_DIR'])) as f:
-        template = Template(f.read())
+    template = Template(read_template(settings['TEMPLATE_DIR'], 'resource.html'))
     response['body'] = template.render(variable=settings['A'])
 
 
 def resource_list(request, response, **kwargs):
     response['body'] = 'resource_list'
+    return 404
