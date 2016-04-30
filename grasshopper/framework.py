@@ -53,14 +53,14 @@ class Framework(object):
         request = {
             'method': method,
             'headers': {},
-            'body': u'',
+            'body': '',
             'path': path,
             'environ': environ,
             'routing': self.routing,
         }
         response = {
             'headers': {},
-            'body': u'',
+            'body': '',
         }
         if func is None:
             response_headers = response['headers'].items()
