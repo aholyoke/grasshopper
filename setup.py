@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='grasshopper',
+setup(name='grasshopper-web',
       version='0.1',
       description='The Grasshopper python microframework',
       classifiers=[

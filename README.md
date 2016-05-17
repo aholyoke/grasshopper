@@ -8,16 +8,19 @@
 
 
 ### Installation
-`pip install grasshopper`
+`pip install grasshopper-web`
 
 
 ### Usage
 
 1. Make a framework object.
-`app = Framework(settings)`
+```
+from grasshopper import Framework
+app = Framework(settings)
+```
 `settings` can be any dict of settings which will be accessible from all view functions
 
-2. Define a view
+2. Define a view.
 ```
 def hello(**kwargs):
 	path = kwargs['request']['headers']['Path']
