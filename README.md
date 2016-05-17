@@ -14,14 +14,14 @@
 ### Usage
 
 1. Make a framework object.
-```
+```python
 from grasshopper import Framework
 app = Framework(settings)
 ```
 `settings` can be any dict of settings which will be accessible from all view functions
 
 2. Define a view.
-```
+```python
 def hello(**kwargs):
 	ua = kwargs['request']['headers']['User-Agent']
 	kwargs['response']['body'] = "your user agent= " + ua
@@ -33,7 +33,7 @@ Writing to `kwargs['response']` defines the response to send back
 
 Of course you can also take advantage of Python's sweet argument passing by adding these parameters
 
-```
+```python
 def hello(request, response, **kwargs):
 	ua = request['headers']['User-Agent']
 	response['body'] = "your user agent= " + ua
