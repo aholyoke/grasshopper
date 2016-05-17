@@ -23,8 +23,8 @@ app = Framework(settings)
 2. Define a view.
 ```
 def hello(**kwargs):
-	path = kwargs['request']['headers']['Path']
-	kwargs['response']['body'] = "your path= " + path
+	ua = kwargs['request']['headers']['User-Agent']
+	kwargs['response']['body'] = "your user agent= " + ua
 	return 200
 ```
 Writing to `kwargs['response']` defines the response to send back
