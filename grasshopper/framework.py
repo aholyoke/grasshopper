@@ -1,4 +1,5 @@
 from urllib import quote
+import traceback
 
 CODES = {
     200: 'OK',
@@ -46,45 +47,56 @@ class Framework(object):
         self.settings = settings
 
     def __call__(self, environ, start_response):
-        method = environ['REQUEST_METHOD']
-        path = environ['PATH_INFO']
-        func = self.lookup(path, method)
+        try:
+            method = environ['REQUEST_METHOD']
+            path = environ['PATH_INFO']
+            func = self.lookup(path, method)
 
-        request = {
-            'method': method,
-            'headers': {},
-            'body': '',
-            'path': path,
-            'environ': environ,
-            'routing': self.routing,
-        }
-        response = {
-            'headers': {},
-            'body': '',
-        }
-        if func is None:
+            request = {
+                'method': method,
+                'headers': {
+                    'User-Agent': environ.get('HTTP_USER_AGENT'),
+                    'Accept-Language': environ.get('HTTP_ACCEPT_LANGUAGE'),
+                },
+                'body': '',
+                'path': path,
+                'environ': environ,
+                'routing': self.routing,
+            }
+            response = {
+                'headers': {},
+                'body': '',
+            }
+            if func is None:
+                response_headers = response['headers'].items()
+                start_response('404 Not Found', response_headers)
+                return 'Not Found'
+                # raise StopIteration()
+
+            try:
+                status_code = func(
+                    request=request,
+                    response=response,
+                    settings=self.settings,
+                )
+            except Exception as e:
+                start_response('500 Internal Server Error', [])
+                return traceback.format_exc()
+
+            if status_code is None:
+                status_code = 200
+            if 'Content-Type' not in response['headers']:
+                response['headers']['Content-Type'] = 'text/plain'
+            if 'Content-Length' not in response['headers']:
+                response['headers']['Content-Length'] = str(len(response['body']))
+
             response_headers = response['headers'].items()
-            start_response('404 Not Found', response_headers)
-            yield 'Not Found'
-            raise StopIteration()
 
-        status_code = func(
-            request=request,
-            response=response,
-            settings=self.settings,
-        )
-
-        if status_code is None:
-            status_code = 200
-        if 'Content-Type' not in response['headers']:
-            response['headers']['Content-Type'] = 'text/plain'
-        if 'Content-Length' not in response['headers']:
-            response['headers']['Content-Length'] = str(len(response['body']))
-
-        response_headers = response['headers'].items()
-
-        start_response('{} {}'.format(status_code, CODES[status_code]), response_headers)
-        yield response['body']
+            start_response('{} {}'.format(status_code, CODES[status_code]), response_headers)
+            return response['body']
+        except Exception as e:
+            start_response('500 Internal Server Error', [])
+            return traceback.format_exc()
 
     def url_for(method, func):
         found_parts = _url_for(self.routing[method], func)
