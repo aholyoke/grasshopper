@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(name='grasshopper',
       version='0.1',
-      description='The nothing-fancy WSGI framework',
+      description='The Grasshopper python microframework',
       classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: BSD License',
