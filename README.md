@@ -28,10 +28,13 @@ def hello(**kwargs):
 	return 200
 ```
 Writing to `kwargs['response']` defines the response to send back
+
 `kwargs['request']` contains info about the request
+
 `kwargs['settings']` contains the settings you passed into the Framework
 
-Of course you can also take advantage of Python's sweet argument passing by adding these parameters
+
+Of course you can also take advantage of Python's sweet argument passing by adding them to the parameters
 
 ```python
 def hello(request, response, **kwargs):
@@ -43,9 +46,10 @@ def hello(request, response, **kwargs):
 3. Route a URL to the view
 `app.get('/hello/', hello)`
 
-Routing also supports wildcard matching but you have to parse out the value in the function eg.
-`app.get('/user/*/stats', user_stats)`
-will route '/users/55/stats' to `user_stats` but `user_stats` will have to parse the 55 out of `kwargs['request']['path']`
+Routing also supports wildcard matching but you have to parse out the value in the function
+
+For example
+`app.get('/user/*/stats', user_stats)` will route `'/users/55/stats'` to `user_stats`, but `user_stats` will have to parse the 55 out of `kwargs['request']['path']`
 
 See the example app under /example for more details
 
