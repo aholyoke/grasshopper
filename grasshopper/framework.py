@@ -38,6 +38,78 @@ METHODS = [
     'PATCH',
 ]
 
+REQUEST_HEADERS = [
+    'Accept',
+    'Accept-Charset',
+    'Accept-Datetime',
+    'Accept-Encoding',
+    'Accept-Language',
+    'Authorization',
+    'Cache-Control',
+    'Connection',
+    'Cookie',
+    'Content-Length',
+    'Content-Type',
+    'Date',
+    'Expect',
+    'Forwarded',
+    'From',
+    'Host',
+    'If-Match',
+    'If-Modified-Since',
+    'If-None-Match',
+    'If-Range',
+    'If-Unmodified-Since',
+    'Max-Forwards',
+    'Origin',
+    'Pragma',
+    'Proxy-Authorization',
+    'Range',
+    'Referer',
+    'TE',
+    'User-Agent',
+    'Upgrade',
+    'Via',
+    'Warning',
+]
+
+COMMON_REQUEST_HEADERS = [
+    'X-Requested-With',
+    'DNT',
+    'X-Forwarded-For',
+    'X-Forwarded-With',
+    'X-Forwarded-Host',
+    'X-Forwarded-Proto',
+    'Front-End-Https',
+    'X-Http-Method-Override',
+    'X-ATT-DeviceId',
+    'X-Wap-Profile',
+    'Proxy-Connection',
+    'X-UIDH',
+    'X-Csrf-Token',
+    'CSRFToken',
+    'X-XSRF-TOKEN',
+]
+
+RESPONSE_HEADERS = [
+    'ETag',
+    'Expires',
+    'Last-Modified',
+    'Link',
+    'Location',
+    'Pragma',
+    'Proxy-Authenticate',
+    'Public-Key-Pins',
+    'Retry-After',
+    'Server',
+    'Set-Cookie',
+    'Status',
+    'Strict-Transport-Security',
+    'Trailer',
+    'Transfer-Encoding',
+
+]
+
 
 class Framework(object):
     def __init__(self, settings=None):
