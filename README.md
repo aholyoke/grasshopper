@@ -13,14 +13,14 @@
 
 ### Usage
 
-1. Make a framework object.
+1\. Make a framework object.
 ```python
 from grasshopper import Framework
 app = Framework(settings)
 ```
 `settings` can be any dict of settings which will be accessible from all view functions
 
-2. Define a view.
+2\. Define a view.
 ```python
 def hello(**kwargs):
 	ua = kwargs['request']['headers']['User-Agent']
@@ -43,7 +43,7 @@ def hello(request, response, **kwargs):
 	return 200
 ```
 
-3. Route a URL to the view
+3\. Route a URL to the view.
 `app.get('/hello/', hello)`
 
 Routing also supports wildcard matching but you have to parse out the value in the function
