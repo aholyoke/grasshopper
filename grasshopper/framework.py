@@ -92,6 +92,21 @@ COMMON_REQUEST_HEADERS = [
 ]
 
 RESPONSE_HEADERS = [
+    'Access-Control-Allow-Origin',
+    'Accept-Patch',
+    'Accept-Ranges',
+    'Age',
+    'Allow',
+    'Alt-Svc',
+    'Cache-Control',
+    'Connection',
+    'Content-Disposition',
+    'Content-Encoding',
+    'Content-Length',
+    'Content-Location',
+    'Content-Range',
+    'Content-Type',
+    'Date',
     'ETag',
     'Expires',
     'Last-Modified',
@@ -100,6 +115,7 @@ RESPONSE_HEADERS = [
     'Pragma',
     'Proxy-Authenticate',
     'Public-Key-Pins',
+    'Refresh',
     'Retry-After',
     'Server',
     'Set-Cookie',
@@ -107,7 +123,23 @@ RESPONSE_HEADERS = [
     'Strict-Transport-Security',
     'Trailer',
     'Transfer-Encoding',
+    'TSV',
+    'Upgrade',
+    'Via',
+    'Warning',
+    'WWW-Authenticate',
+]
 
+COMMON_RESPONSE_HEADERS = [
+    'X-XSS-Protection',
+    'Content-Security-Policy',
+    'X-Content-Security-Policy',
+    'X-WebKit-Security-Policy',
+    'X-Content-Type-Options',
+    'X-Powered-By',
+    'X-UA-Compatible',
+    'X-Content-Duration',
+    'Upgrade-Insecure-Requests',
 ]
 
 
