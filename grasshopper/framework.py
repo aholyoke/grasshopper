@@ -154,7 +154,7 @@ class Framework(object):
         try:
             method = environ['REQUEST_METHOD']
             path = environ['PATH_INFO']
-            func = self.lookup(path, method)
+            func, wildcards = self.lookup(path, method)
 
             request = {
                 'method': method,
@@ -166,6 +166,7 @@ class Framework(object):
                 'path': path,
                 'environ': environ,
                 'routing': self.routing,
+                'wildcards': wildcards,
             }
             response = {
                 'headers': {},
@@ -175,12 +176,12 @@ class Framework(object):
                 response_headers = response['headers'].items()
                 start_response('404 Not Found', response_headers)
                 return 'Not Found'
-                # raise StopIteration()
 
             try:
                 status_code = func(
                     request=request,
                     response=response,
+                    wildcards=wildcards,
                     settings=self.settings,
                 )
             except Exception as e:
@@ -208,9 +209,14 @@ class Framework(object):
             yield '/'.join(parts)
 
     def lookup(self, url, method):
+        wildcards = []
         path, _, qs = url.partition('?')
         parts = path.strip('/').split('/') + ['']
-        return _lookup(parts, self.routing[method])
+        func = _lookup(parts, self.routing[method], wildcards)
+        if func:
+            return func, wildcards
+        else:
+            return None, []
 
     def route(self, url, func, methods=None):
         if methods is None:
@@ -254,14 +260,17 @@ def _route(parts, table, func):
         _route(parts[1:], table[parts[0]], func)
 
 
-def _lookup(parts, table):
-    sub_table = table.get(parts[0], table.get('*'))
+def _lookup(parts, table, wildcards):
+    sub_table = table.get(parts[0])
     if sub_table is None:
-        return
+        sub_table = table.get('*')
+        wildcards.append(parts[0])
+        if sub_table is None:
+            return
 
     if not isinstance(sub_table, dict):
         return sub_table
-    return _lookup(parts[1:], sub_table)
+    return _lookup(parts[1:], sub_table, wildcards)
 
 
 def reconstruct_url(environ):

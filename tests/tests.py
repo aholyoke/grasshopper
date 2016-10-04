@@ -44,60 +44,62 @@ class TestLookup(unittest.TestCase):
         app.get('/c', c)
         app.get('/c/f', f)
         app.get('/c/f/*', h)
+        app.post('/c/f/*/a/*', a)
+        app.delete('/c/f/*/a/*/b', b)
         self.app = app
 
     def test_basic(self):
-        self.assertEqual(self.app.lookup('a', 'GET'), a)
-        self.assertEqual(self.app.lookup('/a', 'GET'), a)
-        self.assertEqual(self.app.lookup('a/', 'GET'), a)
-        self.assertEqual(self.app.lookup('/a/', 'GET'), a)
+        self.assertEqual(self.app.lookup('a', 'GET')[0], a)
+        self.assertEqual(self.app.lookup('/a', 'GET')[0], a)
+        self.assertEqual(self.app.lookup('a/', 'GET')[0], a)
+        self.assertEqual(self.app.lookup('/a/', 'GET')[0], a)
 
-        self.assertEqual(self.app.lookup('b', 'GET'), b)
-        self.assertEqual(self.app.lookup('/b', 'GET'), b)
-        self.assertEqual(self.app.lookup('b/', 'GET'), b)
-        self.assertEqual(self.app.lookup('/b/', 'GET'), b)
+        self.assertEqual(self.app.lookup('b', 'GET')[0], b)
+        self.assertEqual(self.app.lookup('/b', 'GET')[0], b)
+        self.assertEqual(self.app.lookup('b/', 'GET')[0], b)
+        self.assertEqual(self.app.lookup('/b/', 'GET')[0], b)
 
     def test_nested(self):
-        self.assertEqual(self.app.lookup('b/f/g', 'GET'), g)
-        self.assertEqual(self.app.lookup('/b/f/g', 'GET'), g)
-        self.assertEqual(self.app.lookup('b/f/g/', 'GET'), g)
-        self.assertEqual(self.app.lookup('/b/f/g/', 'GET'), g)
+        self.assertEqual(self.app.lookup('b/f/g', 'GET')[0], g)
+        self.assertEqual(self.app.lookup('/b/f/g', 'GET')[0], g)
+        self.assertEqual(self.app.lookup('b/f/g/', 'GET')[0], g)
+        self.assertEqual(self.app.lookup('/b/f/g/', 'GET')[0], g)
 
     def test_wildcards(self):
-        self.assertEqual(self.app.lookup('b/*/e', 'GET'), e)
-        self.assertEqual(self.app.lookup('b/x/e', 'GET'), e)
-        self.assertEqual(self.app.lookup('b/abc/e', 'GET'), e)
-        self.assertEqual(self.app.lookup('/b/abc/e', 'GET'), e)
-        self.assertEqual(self.app.lookup('/b/abc/e/', 'GET'), e)
-        self.assertEqual(self.app.lookup('/b/abc', 'GET'), b)
-        self.assertEqual(self.app.lookup('/c/f', 'GET'), f)
-        self.assertEqual(self.app.lookup('/c/f/', 'GET'), f)
-        self.assertEqual(self.app.lookup('/c/f/abc', 'GET'), h)
+        self.assertEqual(self.app.lookup('b/*/e', 'GET')[0], e)
+        self.assertEqual(self.app.lookup('b/x/e', 'GET')[0], e)
+        self.assertEqual(self.app.lookup('b/abc/e', 'GET')[0], e)
+        self.assertEqual(self.app.lookup('/b/abc/e', 'GET')[0], e)
+        self.assertEqual(self.app.lookup('/b/abc/e/', 'GET')[0], e)
+        self.assertEqual(self.app.lookup('/b/abc', 'GET')[0], b)
+        self.assertEqual(self.app.lookup('/c/f', 'GET')[0], f)
+        self.assertEqual(self.app.lookup('/c/f/', 'GET')[0], f)
+        self.assertEqual(self.app.lookup('/c/f/abc', 'GET')[0], h)
 
     def test_slash_agnostic(self):
         self.assertEqual(
-            self.app.lookup('a', 'GET'),
-            self.app.lookup('/a/', 'GET'))
+            self.app.lookup('a', 'GET')[0],
+            self.app.lookup('/a/', 'GET')[0])
         self.assertEqual(
-            self.app.lookup('a/', 'GET'),
-            self.app.lookup('/a/', 'GET'))
+            self.app.lookup('a/', 'GET')[0],
+            self.app.lookup('/a/', 'GET')[0])
         self.assertEqual(
-            self.app.lookup('/a', 'GET'),
-            self.app.lookup('/a/', 'GET'))
+            self.app.lookup('/a', 'GET')[0],
+            self.app.lookup('/a/', 'GET')[0])
 
         self.assertEqual(
-            self.app.lookup('a', 'GET'),
-            self.app.lookup('/a', 'GET'))
+            self.app.lookup('a', 'GET')[0],
+            self.app.lookup('/a', 'GET')[0])
         self.assertEqual(
-            self.app.lookup('a/', 'GET'),
-            self.app.lookup('/a', 'GET'))
+            self.app.lookup('a/', 'GET')[0],
+            self.app.lookup('/a', 'GET')[0])
 
         self.assertEqual(
-            self.app.lookup('a', 'GET'),
-            self.app.lookup('a/', 'GET'))
+            self.app.lookup('a', 'GET')[0],
+            self.app.lookup('a/', 'GET')[0])
         self.assertEqual(
-            self.app.lookup('/a', 'GET'),
-            self.app.lookup('a/', 'GET'))
+            self.app.lookup('/a', 'GET')[0],
+            self.app.lookup('a/', 'GET')[0])
 
 
 class TestRouting(unittest.TestCase):
@@ -116,9 +118,9 @@ class TestRouting(unittest.TestCase):
             app = Framework({'app': i})
             for route in routes:
                 app.get(*route)
-            self.assertEqual(app.lookup('/a', 'GET'), a, i)
-            self.assertEqual(app.lookup('/a/x', 'GET'), b, i)
-            self.assertEqual(app.lookup('/a/c', 'GET'), c, i)
+            self.assertEqual(app.lookup('/a', 'GET')[0], a, i)
+            self.assertEqual(app.lookup('/a/x', 'GET')[0], b, i)
+            self.assertEqual(app.lookup('/a/c', 'GET')[0], c, i)
 
 
 if __name__ == "__main__":
