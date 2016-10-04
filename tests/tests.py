@@ -101,6 +101,17 @@ class TestLookup(unittest.TestCase):
             self.app.lookup('/a', 'GET')[0],
             self.app.lookup('a/', 'GET')[0])
 
+    def test_wildcard_passing_arguments(self):
+        self.assertEqual(
+            self.app.lookup('b/abc/e', 'GET')[1],
+            ['abc'])
+        self.assertEqual(
+            self.app.lookup('c/f/77e/a/something', 'POST')[1],
+            ['77e', 'something'])
+        self.assertEqual(
+            self.app.lookup('c/f/77e/a/something/b', 'DELETE')[1],
+            ['77e', 'something'])
+
 
 class TestRouting(unittest.TestCase):
     def setUp(self):
