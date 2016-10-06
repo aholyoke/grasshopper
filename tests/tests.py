@@ -113,6 +113,25 @@ class TestLookup(unittest.TestCase):
             ['77e', 'something'])
 
 
+class Test404s(unittest.TestCase):
+    def setUp(self):
+        self.app = Framework()
+        self.app.get('a/*', a)
+        self.app.post('/c/f/*/a/*', a)
+        self.app.put('/a/b/c', c)
+        self.app.delete('/a/*/c', c)
+
+    def test_wildcard_termination(self):
+        self.assertEqual(self.app.lookup('/a', 'GET'), (None, []))
+        self.assertEqual(self.app.lookup('c/f/x/a', 'POST'), (None, []))
+        self.assertEqual(self.app.lookup('a/c/', 'DELETE'), (None, []))
+
+    def test_wrong_url(self):
+        self.assertEqual(self.app.lookup('/a/b', 'PUT'), (None, []))
+        self.assertEqual(self.app.lookup('/a/b/c/d', 'PUT'), (None, []))
+        self.assertEqual(self.app.lookup('/b/c', 'PUT'), (None, []))
+
+
 class TestRouting(unittest.TestCase):
     def setUp(self):
         self.app = Framework()
