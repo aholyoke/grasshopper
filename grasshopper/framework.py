@@ -261,16 +261,19 @@ def _route(parts, table, func):
 
 
 def _lookup(parts, table, wildcards):
-    sub_table = table.get(parts[0])
-    if sub_table is None:
-        sub_table = table.get('*')
-        wildcards.append(parts[0])
+    while True:
+        sub_table = table.get(parts[0])
         if sub_table is None:
-            return
+            sub_table = table.get('*')
+            wildcards.append(parts[0])
+            if sub_table is None:
+                return
 
-    if not isinstance(sub_table, dict):
-        return sub_table
-    return _lookup(parts[1:], sub_table, wildcards)
+        if not isinstance(sub_table, dict):
+            return sub_table
+
+        parts = parts[1:]
+        table = sub_table
 
 
 def reconstruct_url(environ):
