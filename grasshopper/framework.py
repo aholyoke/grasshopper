@@ -213,10 +213,7 @@ class Framework(object):
         path, _, qs = url.partition('?')
         parts = path.strip('/').split('/') + ['']
         func = _lookup(parts, self.routing[method], wildcards)
-        if func:
-            return func, wildcards
-        else:
-            return None, []
+        return (func, wildcards) if func else (None, [])
 
     def route(self, url, func, methods=None):
         if methods is None:
@@ -264,6 +261,8 @@ def _lookup(parts, table, wildcards):
     while True:
         sub_table = table.get(parts[0])
         if sub_table is None:
+            if parts[0] == '':
+                return
             sub_table = table.get('*')
             wildcards.append(parts[0])
             if sub_table is None:
@@ -277,7 +276,7 @@ def _lookup(parts, table, wildcards):
 
 
 def reconstruct_url(environ):
-    """ Written by Ian Bickling """
+    """ Written by Ian Bicking """
     url = environ['wsgi.url_scheme'] + '://'
 
     if environ.get('HTTP_HOST'):
