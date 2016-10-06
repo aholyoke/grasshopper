@@ -49,10 +49,21 @@ def hello(request, response, **kwargs):
 Routing also supports wildcard matching but you have to parse out the value in the function
 
 For example
-`app.get('/user/*/stats', user_stats)` will route `'/users/55/stats'` to `user_stats`, but `user_stats` will have to parse the 55 out of `kwargs['request']['path']`
+
+`app.get('/user/*/stats', user_stats)` will route `'/users/55/stats'` to `user_stats`
+
+
 
 See the example app under /example for more details
 
 
 ### Running
 Grasshopper is WSGI compatible so any WSGI server should work
+
+eg.
+
+```
+from wsgiref.simple_server import make_server
+server = make_server('', 8000, app)
+server.serve_forever()
+```
