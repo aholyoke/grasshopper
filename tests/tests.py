@@ -153,5 +153,33 @@ class TestRouting(unittest.TestCase):
             self.assertEqual(app.lookup('/a/c', 'GET')[0], c, i)
 
 
+class TestCustomValidators(unittest.TestCase):
+
+    def test_fallbacks(self):
+        validators = [
+            ('int', int),
+            ('float', float),
+            ('*', str),
+        ]
+        app = Framework(validators=validators)
+        app.get("/x/a", f)
+        app.get("/x/<int>", g)
+        app.get("/x/<float>", h)
+        app.get("/x/<*>", i)
+
+        self.assertEqual(app.lookup("/x/a", "GET"), (f, []))
+        self.assertEqual(app.lookup("/x/7", "GET"), (g, [7]))
+        self.assertEqual(app.lookup("/x/7.9", "GET"), (h, [7.9]))
+        self.assertEqual(app.lookup("/x/hello", "GET"), (i, ["hello"]))
+
+    def test_normal_wildcards(self):
+        app = Framework()
+        app.get("/x/a", f)
+        app.get("/x/*", g)
+
+        self.assertEqual(app.lookup("/x/a", "GET"), (f, []))
+        self.assertEqual(app.lookup("/x/b", "GET"), (g, ["b"]))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -144,11 +144,12 @@ COMMON_RESPONSE_HEADERS = [
 
 
 class Framework(object):
-    def __init__(self, settings=None):
+    def __init__(self, settings=None, **kwargs):
         self.routing = {verb: {} for verb in METHODS}
         if settings is None:
             settings = {}
         self.settings = settings
+        self.validators = kwargs.get('validators', {})
 
     def __call__(self, environ, start_response):
         try:
@@ -264,9 +265,9 @@ def _lookup(parts, table, wildcards):
             if part == '':
                 return
             sub_table = table.get('*')
-            wildcards.append(part)
             if sub_table is None:
                 return
+            wildcards.append(part)
 
         if not isinstance(sub_table, dict):
             return sub_table
