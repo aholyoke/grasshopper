@@ -29,6 +29,15 @@ def g(**kwargs): pass
 def h(**kwargs): pass
 
 
+def _make_app(routings, settings=None):
+    if settings is None:
+        settings = {}
+    app = Framework(**settings)
+    for func, url, view in routings:
+        getattr(app, func)(url, view)
+    return app
+
+
 class TestLookup(unittest.TestCase):
 
     def setUp(self):
@@ -133,8 +142,6 @@ class Test404s(unittest.TestCase):
 
 
 class TestRouting(unittest.TestCase):
-    def setUp(self):
-        self.app = Framework()
 
     def test_order_doesnt_matter(self):
         from itertools import permutations
@@ -152,9 +159,33 @@ class TestRouting(unittest.TestCase):
             self.assertEqual(app.lookup('/a/x', 'GET')[0], b, i)
             self.assertEqual(app.lookup('/a/c', 'GET')[0], c, i)
 
+    def test_improper_configuration(self):
+        with self.assertRaises(ValueError):
+            _make_app(
+                [
+                    ('get', '/a/b', a),
+                    ('get', '/a/b', b),
+                ]
+            )
+        with self.assertRaises(ValueError):
+            _make_app(
+                [
+                    ('get', '/', a),
+                    ('get', '/', b),
+                ]
+            )
+        with self.assertRaises(ValueError):
+            _make_app(
+                [
+                    ('route', '/a', a),
+                    ('get', '/a', b),
+                ]
+            )
+
 
 class TestCustomValidators(unittest.TestCase):
 
+    @unittest.skip("TDD")
     def test_fallbacks(self):
         validators = [
             ('int', int),

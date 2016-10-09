@@ -149,7 +149,8 @@ class Framework(object):
         if settings is None:
             settings = {}
         self.settings = settings
-        self.validators = kwargs.get('validators', {})
+        self.validators = kwargs.get('validators', [])
+        self.lookup_validators = dict(self.validators)
 
     def __call__(self, environ, start_response):
         try:
@@ -224,9 +225,7 @@ class Framework(object):
             for method in methods:
                 _route(parts, self.routing[method], func)
         except ValueError as e:
-            raise ValueError("Path defined twice {} ({})".format(
-                url,
-                e.message))
+            raise ValueError("Path defined twice {} ({})".format(url, e.message))
 
     def get(self, url, func):
         self.route(url, func, ['GET'])
@@ -242,20 +241,26 @@ class Framework(object):
 
 
 def _route(parts, table, func):
-    val = table.get(parts[0])
-    if len(parts) == 1:
-        if isinstance(val, dict):
-            table[parts[0]][''] = func
-        elif val is None:
-            table[parts[0]] = {'': func}
-        else:
-            raise ValueError("original: \"{}\" new: \"{}\"".format(
-                val[''].__name__,
-                func.__name__))
-    else:
+    for i, part in enumerate(parts):
+        val = table.get(part)
+        if i + 1 == len(parts):
+            if isinstance(val, dict):
+                if table[part].get('') is not None:
+                    # val is existing function
+                    raise ValueError("original: \"{}\" new: \"{}\"".format(
+                        val[''].__name__,
+                        func.__name__))
+                table[part][''] = func
+                return
+            elif val is None:
+                table[part] = {'': func}
+                return
+
+        # Make sub-dict
         if val is None:
-            table[parts[0]] = {}
-        _route(parts[1:], table[parts[0]], func)
+            table[part] = {}
+        # Enter sub-dict
+        table = table[part]
 
 
 def _lookup(parts, table, wildcards):
