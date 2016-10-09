@@ -258,20 +258,19 @@ def _route(parts, table, func):
 
 
 def _lookup(parts, table, wildcards):
-    while True:
-        sub_table = table.get(parts[0])
+    for part in parts:
+        sub_table = table.get(part)
         if sub_table is None:
-            if parts[0] == '':
+            if part == '':
                 return
             sub_table = table.get('*')
-            wildcards.append(parts[0])
+            wildcards.append(part)
             if sub_table is None:
                 return
 
         if not isinstance(sub_table, dict):
             return sub_table
 
-        parts = parts[1:]
         table = sub_table
 
 
