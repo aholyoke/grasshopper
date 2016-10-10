@@ -241,26 +241,23 @@ class Framework(object):
 
 
 def _route(parts, table, func):
-    for i, part in enumerate(parts):
-        val = table.get(part)
-        if i + 1 == len(parts):
-            if isinstance(val, dict):
-                if table[part].get('') is not None:
-                    # val is existing function
-                    raise ValueError("original: \"{}\" new: \"{}\"".format(
-                        val[''].__name__,
-                        func.__name__))
-                table[part][''] = func
-                return
-            elif val is None:
-                table[part] = {'': func}
-                return
-
-        # Make sub-dict
-        if val is None:
+    for part in parts[:-1]:
+        if part not in table:
             table[part] = {}
-        # Enter sub-dict
         table = table[part]
+
+    part = parts[-1]
+    if part not in table:
+        # new endpoint
+        table[part] = {'': func}
+    else:
+        if '' in table[part]:
+            # table[part] is existing function
+            raise ValueError("original: \"{}\" new: \"{}\"".format(
+                table[part][''].__name__,
+                func.__name__))
+        # longer endpoint already exists
+        table[part][''] = func
 
 
 def _lookup(parts, table, wildcards):
