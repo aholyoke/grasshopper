@@ -185,7 +185,6 @@ class TestRouting(unittest.TestCase):
 
 class TestCustomValidators(unittest.TestCase):
 
-    @unittest.skip("TDD")
     def test_fallbacks(self):
         validators = [
             ('int', int),
@@ -202,6 +201,34 @@ class TestCustomValidators(unittest.TestCase):
         self.assertEqual(app.lookup("/x/7", "GET"), (g, [7]))
         self.assertEqual(app.lookup("/x/7.9", "GET"), (h, [7.9]))
         self.assertEqual(app.lookup("/x/hello", "GET"), (i, ["hello"]))
+
+    def test_validator_order_well_defined(self):
+        """ Regardless of the order that endpoints are added to
+        the application, the validators should be attempted in the
+        order specified by the validators list passed in to the
+        initializer """
+        validators = [
+            # use 1 / 0 to raise an exception if False
+            ("match_a", lambda part: 1 if part in "a" else 1 / 0),
+            ("match_b", lambda part: 1 if part in "ab" else 1 / 0),
+            ("match_c", lambda part: 1 if part in "abc" else 1 / 0),
+            ("match_d", lambda part: 1 if part in "abcd" else 1 / 0),
+        ]
+        routes = [
+            ('/x/<match_a>', a),
+            ('/x/<match_b>', b),
+            ('/x/<match_c>', c),
+            ('/x/<match_d>', d),
+        ]
+        routes_permutations = permutations(routes, len(routes))
+        for i, routes in enumerate(routes_permutations):
+            app = Framework({'app': i}, validators=validators)
+            for route in routes:
+                app.get(*route)
+            self.assertEqual(app.lookup('/x/a', 'GET')[0], a)
+            self.assertEqual(app.lookup('/x/b', 'GET')[0], b)
+            self.assertEqual(app.lookup('/x/c', 'GET')[0], c)
+            self.assertEqual(app.lookup('/x/d', 'GET')[0], d)
 
     def test_normal_wildcards(self):
         app = Framework(validators={'*': str})
