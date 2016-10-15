@@ -1,6 +1,8 @@
 from urllib import quote
 import traceback
 
+VALIDATOR_KEY = None
+
 CODES = {
     200: 'OK',
     201: 'Created',
@@ -150,7 +152,8 @@ class Framework(object):
             settings = {}
         self.settings = settings
         self.validators = kwargs.get('validators', [])
-        self.lookup_validators = dict(self.validators)
+        self.v_lookup = dict(self.validators)
+        self.v_ordering = {k[0]: i for i, k in enumerate(self.validators)}
 
     def __call__(self, environ, start_response):
         try:
