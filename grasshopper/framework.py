@@ -217,8 +217,43 @@ class Framework(object):
         wildcards = []
         path, _, qs = url.partition('?')
         parts = path.strip('/').split('/') + ['']
-        func = _lookup(parts, self.routing[method], wildcards)
+        func = self._lookup(parts, self.routing[method], wildcards)
         return (func, wildcards) if func else (None, [])
+
+    def _lookup(self, parts, table, wildcards):
+        for part in parts:
+            sub_table = table.get(part)
+            if sub_table is None:
+                if part == '':
+                    # end part should not match wildcard
+                    return
+                validators = table.get(VALIDATOR_KEY)
+                if validators is None:
+                    # wildcard did not match either
+                    return
+                result, sub_table = self._try_validators(validators, part)
+                if result is None:
+                    # all validators failed
+                    return
+                wildcards.append(result)
+
+            if not isinstance(sub_table, dict):
+                # sub_table is view function
+                return sub_table
+
+            table = sub_table
+
+    def _try_validators(self, validators, part):
+        assert validators is not None
+        for v_string, sub_table in validators:
+            # attempt to run validator on part
+            try:
+                result = self.v_lookup[v_string](part)
+                return result, sub_table
+            except:
+                # validator was incorrect, try next one
+                pass
+        return None, None
 
     def route(self, url, func, methods=None):
         if methods is None:
@@ -226,9 +261,54 @@ class Framework(object):
         parts = url.strip('/').split('/')
         try:
             for method in methods:
-                _route(parts, self.routing[method], func)
+                self._route(parts, self.routing[method], func)
         except ValueError as e:
             raise ValueError("Path defined twice {} ({})".format(url, e.message))
+
+    def _add_validator_part(self, table, part, sub_table):
+        if VALIDATOR_KEY not in table:
+            table[VALIDATOR_KEY] = []
+        v_string = part[1:-1]
+        # merge sub tables with the same validator key
+        for key, existing_sub_table in table[VALIDATOR_KEY]:
+            if key == v_string:
+                existing_sub_table.update(sub_table)
+                return
+
+        # else insert new validator key in the order of self.validators
+        for i, v in enumerate(table[VALIDATOR_KEY]):
+            if self.v_ordering[v_string] < self.v_ordering[v[0]]:
+                table[VALIDATOR_KEY].insert(i, (v_string, sub_table))
+                return
+        table[VALIDATOR_KEY].append((v_string, sub_table))
+
+    def _route(self, parts, table, func):
+        for i, part in enumerate(parts[:-1]):
+            if _is_validator_part(part):
+                # make sub table
+                sub_table = {}
+                self._route(parts[i + 1:], sub_table, func)
+                self._add_validator_part(table, part, sub_table)
+                return
+            if part not in table:
+                table[part] = {}
+            table = table[part]
+
+        part = parts[-1]
+        if _is_validator_part(part):
+            self._add_validator_part(table, part, {'': func})
+            return
+        if part not in table:
+            # new endpoint
+            table[part] = {'': func}
+        else:
+            if '' in table[part]:
+                # table[part] is existing function
+                raise ValueError("original: \"{}\" new: \"{}\"".format(
+                    table[part][''].__name__,
+                    func.__name__))
+            # longer endpoint already exists
+            table[part][''] = func
 
     def get(self, url, func):
         self.route(url, func, ['GET'])
@@ -243,41 +323,8 @@ class Framework(object):
         self.route(url, func, ['DELETE'])
 
 
-def _route(parts, table, func):
-    for part in parts[:-1]:
-        if part not in table:
-            table[part] = {}
-        table = table[part]
-
-    part = parts[-1]
-    if part not in table:
-        # new endpoint
-        table[part] = {'': func}
-    else:
-        if '' in table[part]:
-            # table[part] is existing function
-            raise ValueError("original: \"{}\" new: \"{}\"".format(
-                table[part][''].__name__,
-                func.__name__))
-        # longer endpoint already exists
-        table[part][''] = func
-
-
-def _lookup(parts, table, wildcards):
-    for part in parts:
-        sub_table = table.get(part)
-        if sub_table is None:
-            if part == '':
-                return
-            sub_table = table.get('*')
-            if sub_table is None:
-                return
-            wildcards.append(part)
-
-        if not isinstance(sub_table, dict):
-            return sub_table
-
-        table = sub_table
+def _is_validator_part(part):
+    return len(part) > 1 and part[0] == '<' and part[-1] == '>'
 
 
 def reconstruct_url(environ):
