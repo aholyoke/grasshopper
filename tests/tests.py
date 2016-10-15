@@ -1,5 +1,6 @@
 import unittest
 from grasshopper import Framework
+from itertools import permutations
 
 
 def i(**kwargs): pass
@@ -41,20 +42,20 @@ def _make_app(routings, settings=None):
 class TestLookup(unittest.TestCase):
 
     def setUp(self):
-        app = Framework()
+        app = Framework(validators={'*': str})
         app.get('/', i)
         app.get('/a/', a)
         app.get('/b', b)
         app.post('/b', b)
-        app.get('/b/*', b)
-        app.get('/b/*/d', d)
-        app.get('/b/*/e', e)
+        app.get('/b/<*>', b)
+        app.get('/b/<*>/d', d)
+        app.get('/b/<*>/e', e)
         app.get('/b/f/g', g)
         app.get('/c', c)
         app.get('/c/f', f)
-        app.get('/c/f/*', h)
-        app.post('/c/f/*/a/*', a)
-        app.delete('/c/f/*/a/*/b', b)
+        app.get('/c/f/<*>', h)
+        app.post('/c/f/<*>/a/<*>', a)
+        app.delete('/c/f/<*>/a/<*>/b', b)
         self.app = app
 
     def test_basic(self):
@@ -124,11 +125,11 @@ class TestLookup(unittest.TestCase):
 
 class Test404s(unittest.TestCase):
     def setUp(self):
-        self.app = Framework()
-        self.app.get('a/*', a)
-        self.app.post('/c/f/*/a/*', a)
+        self.app = Framework(validators={'*': str})
+        self.app.get('a/<*>', a)
+        self.app.post('/c/f/<*>/a/<*>', a)
         self.app.put('/a/b/c', c)
-        self.app.delete('/a/*/c', c)
+        self.app.delete('/a/<*>/c', c)
 
     def test_wildcard_termination(self):
         self.assertEqual(self.app.lookup('/a', 'GET'), (None, []))
@@ -144,20 +145,19 @@ class Test404s(unittest.TestCase):
 class TestRouting(unittest.TestCase):
 
     def test_order_doesnt_matter(self):
-        from itertools import permutations
         routes = [
             ('/a', a),
-            ('/a/*', b),
+            ('/a/<*>', b),
             ('/a/c', c),
         ]
         routes_permutations = permutations(routes, len(routes))
         for i, routes in enumerate(routes_permutations):
-            app = Framework({'app': i})
+            app = Framework({'app': i}, validators={'*': str})
             for route in routes:
                 app.get(*route)
-            self.assertEqual(app.lookup('/a', 'GET')[0], a, i)
-            self.assertEqual(app.lookup('/a/x', 'GET')[0], b, i)
-            self.assertEqual(app.lookup('/a/c', 'GET')[0], c, i)
+            self.assertEqual(app.lookup('/a', 'GET')[0], a)
+            self.assertEqual(app.lookup('/a/x', 'GET')[0], b)
+            self.assertEqual(app.lookup('/a/c', 'GET')[0], c)
 
     def test_improper_configuration(self):
         with self.assertRaises(ValueError):
@@ -204,9 +204,9 @@ class TestCustomValidators(unittest.TestCase):
         self.assertEqual(app.lookup("/x/hello", "GET"), (i, ["hello"]))
 
     def test_normal_wildcards(self):
-        app = Framework()
+        app = Framework(validators={'*': str})
         app.get("/x/a", f)
-        app.get("/x/*", g)
+        app.get("/x/<*>", g)
 
         self.assertEqual(app.lookup("/x/a", "GET"), (f, []))
         self.assertEqual(app.lookup("/x/b", "GET"), (g, ["b"]))
